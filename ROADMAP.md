@@ -4,7 +4,7 @@
 | --- | --- | --- | --- | --- |
 | 1 | Enterprise Foundation | **100%** | **100%** | **100%** |
 | 2 | Employee & Identity Management | **100%** | **IN DEVELOPMENT** | 50% |
-| 3 | Enterprise Configuration Engine | IMPLEMENTED — LIVE VERIFICATION PENDING | PLANNED | 45% |
+| 3 | Enterprise Configuration Engine | COMPLETE | IMPLEMENTED — LIVE VERIFICATION PENDING | 90% |
 | 4 | CRM & Customer Management | PLANNED | PLANNED | 0% |
 | 5 | Sales & Quotations | PLANNED | PLANNED | 0% |
 | 6 | Dispatch | PLANNED | PLANNED | 0% |

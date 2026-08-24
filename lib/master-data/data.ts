@@ -4,6 +4,7 @@ import { COMPANY_PAGE_SIZE } from "./constants";
 
 export type CompanyListParams = { query?: string; status?: string; type?: string; state?: string; page?: number };
 export async function getCustomerTypes(activeOnly=true){const supabase=await createClient();let request=supabase.from("customer_types").select("*").is("deleted_at",null).order("sort_order").order("name");if(activeOnly)request=request.eq("is_active",true);const {data}=await request;return data??[]}
+export async function getCompanyPaymentTerms(activeOnly=true){const supabase=await createClient();let request=supabase.from("payment_terms").select("*").is("deleted_at",null).order("sort_order").order("name");if(activeOnly)request=request.eq("is_active",true);const {data}=await request;return data??[]}
 export async function getCompanies(params: CompanyListParams) {
   const supabase = await createClient(); const page = Math.max(1, params.page ?? 1); const from = (page - 1) * COMPANY_PAGE_SIZE;
   let request = supabase.from("customer_companies").select("*", { count: "exact" }).is("deleted_at", null).order("legal_name").range(from, from + COMPANY_PAGE_SIZE - 1);

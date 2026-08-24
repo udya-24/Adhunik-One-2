@@ -58,6 +58,10 @@ Run `supabase/migrations/202608240003_phase_2b_identity_access.sql` once after P
 ### Phase 3A migration
 
 Run `supabase/migrations/202608240004_phase_3a_configuration_masters.sql` once after Phase 2B. It reuses Departments, Designations, Teams, and employee-team links; creates Employment Types and Customer Types; preserves and maps existing employee/company type text; adds UUID foreign keys; and replaces organization-master write policies with Admin-only RLS. The legacy text columns remain during this staged migration for compatibility and verification.
+
+### Phase 3B migration
+
+Run `supabase/migrations/202608240005_phase_3b_business_configuration.sql` once after Phase 3A. It preserves existing Employee and Company codes, centralizes future numbering behind protected atomic database triggers, adds Financial Years, General/System Settings, and Payment Terms, and migrates existing company payment-term text into UUID master relationships. Live counters are not writable through the application or authenticated database role.
 For production, add both environment variables to the Vercel project for the required environments, then redeploy. Add the production deployment URL under Supabase **Authentication â†’ URL Configuration** as the Site URL. No machine-specific configuration is required.
 
 ## Commands
