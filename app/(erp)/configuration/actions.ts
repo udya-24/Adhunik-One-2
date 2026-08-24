@@ -1,16 +1,16 @@
-"use server";
+﻿"use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/identity/data";
 import { friendlyDatabaseError, GSTIN_PATTERN, normalizeOptional, normalizeUpper, PAN_PATTERN } from "@/lib/master-data/validation";
 export type FormState = { error?: string };
-async function authenticated() { const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); return { supabase, user }; }
+async function authenticated() { return requireAdmin(); }
 export async function saveCompany(id: string | null, _state: FormState, form: FormData): Promise<FormState> {
   const { supabase, user } = await authenticated(); if (!user) return { error: "Your session has expired. Please sign in again." };
   const legal_name = String(form.get("legal_name") ?? "").trim(); if (!legal_name) return { error: "Legal name is required." };
   const gstin = normalizeUpper(form.get("gstin")); const pan = normalizeUpper(form.get("pan")); if (gstin && !GSTIN_PATTERN.test(gstin)) return { error: "Enter a valid 15-character GSTIN." }; if (pan && !PAN_PATTERN.test(pan)) return { error: "Enter a valid 10-character PAN." };
   const creditDaysRaw = normalizeOptional(form.get("credit_days")); const creditLimitRaw = normalizeOptional(form.get("credit_limit"));
-  const values = { legal_name, trade_name: normalizeOptional(form.get("trade_name")), company_code: normalizeUpper(form.get("company_code")), company_type: normalizeOptional(form.get("company_type")), gstin, pan, primary_email: normalizeOptional(form.get("primary_email")), primary_phone: normalizeOptional(form.get("primary_phone")), website: normalizeOptional(form.get("website")), payment_terms: normalizeOptional(form.get("payment_terms")), credit_days: creditDaysRaw ? Number(creditDaysRaw) : null, credit_limit: creditLimitRaw ? Number(creditLimitRaw) : null, notes: normalizeOptional(form.get("notes")), is_active: form.get("is_active") === "on", updated_by: user.id };
+  const customerTypeId=normalizeOptional(form.get("customer_type_id"));const {data:customerType}=customerTypeId?await supabase.from("customer_types").select("id,name").eq("id",customerTypeId).maybeSingle():{data:null}; const values = { legal_name, trade_name: normalizeOptional(form.get("trade_name")), company_code: normalizeUpper(form.get("company_code")), customer_type_id: customerType?.id??null, company_type: customerType?.name??null, gstin, pan, primary_email: normalizeOptional(form.get("primary_email")), primary_phone: normalizeOptional(form.get("primary_phone")), website: normalizeOptional(form.get("website")), payment_terms: normalizeOptional(form.get("payment_terms")), credit_days: creditDaysRaw ? Number(creditDaysRaw) : null, credit_limit: creditLimitRaw ? Number(creditLimitRaw) : null, notes: normalizeOptional(form.get("notes")), is_active: form.get("is_active") === "on", updated_by: user.id };
   const result = id ? await supabase.from("customer_companies").update(values).eq("id", id).is("deleted_at", null).select("id").single() : await supabase.from("customer_companies").insert({ ...values, created_by: user.id }).select("id").single();
   if (result.error) return { error: friendlyDatabaseError(result.error.message) }; revalidatePath("/configuration"); redirect(`/configuration/${result.data.id}`);
 }

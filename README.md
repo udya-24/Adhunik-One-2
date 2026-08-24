@@ -1,8 +1,8 @@
-# Adhunik ERP
+﻿# Adhunik ERP
 
 Enterprise Management System for Adhunik Switchgears.
 
-**Current Module: Module 2 — Employee & Identity Management (Part B in development)**
+**Current Module: Module 2 â€” Employee & Identity Management (Part B in development)**
 
 ## Technology
 
@@ -38,9 +38,9 @@ Only the browser-safe Supabase anon/publishable key belongs in this application.
 
 ## Supabase setup
 
-1. In the Supabase dashboard, open **Authentication → Providers → Email** and enable Email/Password authentication.
+1. In the Supabase dashboard, open **Authentication â†’ Providers â†’ Email** and enable Email/Password authentication.
 2. For an internal ERP, disable public sign-up if employees should only be created by an administrator.
-3. Open **Authentication → Users → Add user → Create new user** and enter the initial administrator email and a strong password. Auto-confirm the user when prompted.
+3. Open **Authentication â†’ Users â†’ Add user â†’ Create new user** and enter the initial administrator email and a strong password. Auto-confirm the user when prompted.
 4. Open **SQL Editor**, paste the complete contents of `supabase/migrations/202608240001_phase_1b_enterprise_foundation.sql`, and run it once.
 5. Confirm that `customer_companies`, `customer_contacts`, `customer_addresses`, `departments`, `designations`, and `teams` appear in Table Editor.
 6. In Table Editor, verify that RLS is enabled for all six tables. The temporary policies allow authenticated users to select, insert, and update records; anonymous users receive no access.
@@ -52,9 +52,13 @@ After the Module 1 migration, run the complete `supabase/migrations/202608240002
 
 ### Phase 2B migration
 
-Run `supabase/migrations/202608240003_phase_2b_identity_access.sql` once after Phase 2A. It creates the three basic roles, ERP profiles, invitation records, access-check functions, RLS policies, and a bootstrap Admin profile for the earliest existing Auth user. Add `/auth/callback` for each deployment origin to Supabase **Authentication → URL Configuration → Redirect URLs**.
+Run `supabase/migrations/202608240003_phase_2b_identity_access.sql` once after Phase 2A. It creates the three basic roles, ERP profiles, invitation records, access-check functions, RLS policies, and a bootstrap Admin profile for the earliest existing Auth user. Add `/auth/callback` for each deployment origin to Supabase **Authentication â†’ URL Configuration â†’ Redirect URLs**.
 
-For production, add both environment variables to the Vercel project for the required environments, then redeploy. Add the production deployment URL under Supabase **Authentication → URL Configuration** as the Site URL. No machine-specific configuration is required.
+
+### Phase 3A migration
+
+Run `supabase/migrations/202608240004_phase_3a_configuration_masters.sql` once after Phase 2B. It reuses Departments, Designations, Teams, and employee-team links; creates Employment Types and Customer Types; preserves and maps existing employee/company type text; adds UUID foreign keys; and replaces organization-master write policies with Admin-only RLS. The legacy text columns remain during this staged migration for compatibility and verification.
+For production, add both environment variables to the Vercel project for the required environments, then redeploy. Add the production deployment URL under Supabase **Authentication â†’ URL Configuration** as the Site URL. No machine-specific configuration is required.
 
 ## Commands
 
