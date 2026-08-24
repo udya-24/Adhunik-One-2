@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+:root { --background: #f4f6f8; --foreground: #172033; --brand: #164e63; }
+* { box-sizing: border-box; }
+html { background: var(--background); }
+body { margin: 0; color: var(--foreground); background: var(--background); font-family: Arial, Helvetica, sans-serif; }
+button, input { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid #0891b2; outline-offset: 2px; }
+.card { border: 1px solid #e2e8f0; border-radius: 0.875rem; background: white; box-shadow: 0 1px 2px rgb(15 23 42 / 0.04); }
+.field { width: 100%; border: 1px solid #cbd5e1; border-radius: 0.625rem; background: white; padding: 0.7rem 0.8rem; color: #172033; transition: border-color .15s, box-shadow .15s; }
+.field:focus { border-color: #0891b2; box-shadow: 0 0 0 3px rgb(8 145 178 / .12); outline: none; }
+.button-primary { display: inline-flex; min-height: 2.65rem; align-items: center; justify-content: center; gap: .5rem; border: 0; border-radius: .625rem; background: #155e75; padding: .65rem 1rem; color: white; font-weight: 600; cursor: pointer; transition: background .15s; }
+.button-primary:hover { background: #164e63; }
+.button-primary:disabled { cursor: not-allowed; opacity: .65; }

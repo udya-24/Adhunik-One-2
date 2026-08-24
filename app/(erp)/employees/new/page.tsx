@@ -1,0 +1,2 @@
+import { EmployeeForm } from "@/components/employees/employee-form"; import { PageHeader } from "@/components/ui/page-header"; import { getOrganizationOptions } from "@/lib/employees/data";
+export default async function NewEmployee(){const options=await getOrganizationOptions();return <div className="mx-auto max-w-5xl"><PageHeader title="Add Employee" description="Create an employee record without creating an ERP login account."/><EmployeeForm options={options}/></div>}

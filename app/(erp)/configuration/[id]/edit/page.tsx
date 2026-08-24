@@ -1,0 +1,2 @@
+import { notFound } from "next/navigation"; import { CompanyForm } from "@/components/master-data/company-form"; import { PageHeader } from "@/components/ui/page-header"; import { getCompany } from "@/lib/master-data/data";
+export default async function EditCompanyPage({ params }: { params: Promise<{ id: string }> }) { const { id } = await params; const { company } = await getCompany(id); if (!company) notFound(); return <div className="mx-auto max-w-5xl"><PageHeader title="Edit Company" description={`Update ${company.legal_name}.`}/><CompanyForm company={company}/></div>; }

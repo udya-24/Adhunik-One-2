@@ -1,0 +1,1 @@
+export function PageHeader({ title, description }: { title: string; description: string }) { return <header className="mb-6"><h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{title}</h2><p className="mt-1 max-w-3xl text-sm text-slate-500">{description}</p></header>; }

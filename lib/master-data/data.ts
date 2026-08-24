@@ -1,0 +1,22 @@
+import "server-only";
+import { createClient } from "@/lib/supabase/server";
+import { COMPANY_PAGE_SIZE } from "./constants";
+
+export type CompanyListParams = { query?: string; status?: string; type?: string; state?: string; page?: number };
+export async function getCompanies(params: CompanyListParams) {
+  const supabase = await createClient(); const page = Math.max(1, params.page ?? 1); const from = (page - 1) * COMPANY_PAGE_SIZE;
+  let request = supabase.from("customer_companies").select("*", { count: "exact" }).is("deleted_at", null).order("legal_name").range(from, from + COMPANY_PAGE_SIZE - 1);
+  const term = params.query?.trim().replace(/[%(),]/g, "");
+  if (term) request = request.or(`legal_name.ilike.%${term}%,trade_name.ilike.%${term}%,company_code.ilike.%${term}%,gstin.ilike.%${term}%,primary_phone.ilike.%${term}%,primary_email.ilike.%${term}%`);
+  if (params.status === "active") request = request.eq("is_active", true); if (params.status === "inactive") request = request.eq("is_active", false); if (params.type) request = request.eq("company_type", params.type);
+  if (params.state) { const normalizedState = params.state.trim().replace(/[%_,]/g, ""); const { data: matchingAddresses, error: stateError } = await supabase.from("customer_addresses").select("customer_company_id").ilike("state", `%${normalizedState}%`).eq("is_active", true).is("deleted_at", null); if (stateError) return { companies: [], count: 0, page, error: "Company records could not be loaded." }; const companyIds = [...new Set((matchingAddresses ?? []).map((item) => item.customer_company_id))]; if (!companyIds.length) return { companies: [], count: 0, page, error: null }; request = request.in("id", companyIds); }
+  const { data, error, count } = await request; if (error) return { companies: [], count: 0, page, error: "Company records could not be loaded." };
+  const ids = data.map((item) => item.id); let contacts: { customer_company_id: string; contact_name: string; phone: string | null }[] = []; let addresses: { customer_company_id: string; city: string | null; state: string | null }[] = [];
+  if (ids.length) { const [contactResult, addressResult] = await Promise.all([supabase.from("customer_contacts").select("customer_company_id,contact_name,phone").in("customer_company_id", ids).eq("is_primary", true).eq("is_active", true).is("deleted_at", null), supabase.from("customer_addresses").select("customer_company_id,city,state").in("customer_company_id", ids).eq("is_primary", true).eq("is_active", true).is("deleted_at", null)]); contacts = contactResult.data ?? []; addresses = addressResult.data ?? []; }
+  const companies = data.map((company) => ({ company, contact: contacts.find((x) => x.customer_company_id === company.id) ?? null, address: addresses.find((x) => x.customer_company_id === company.id) ?? null }));
+  return { companies, count: count ?? 0, page, error: null };
+}
+export async function getCompany(id: string) { const supabase = await createClient(); const { data, error } = await supabase.from("customer_companies").select("*").eq("id", id).is("deleted_at", null).maybeSingle(); return { company: data, error }; }
+export async function getCompanyRelations(id: string) { const supabase = await createClient(); const [contacts, addresses] = await Promise.all([supabase.from("customer_contacts").select("*").eq("customer_company_id", id).is("deleted_at", null).order("is_primary", { ascending: false }).order("contact_name"), supabase.from("customer_addresses").select("*").eq("customer_company_id", id).is("deleted_at", null).order("is_primary", { ascending: false }).order("address_type")]); return { contacts: contacts.data ?? [], addresses: addresses.data ?? [], error: contacts.error || addresses.error }; }
+export async function getContact(companyId: string, id: string) { const supabase = await createClient(); const { data } = await supabase.from("customer_contacts").select("*").eq("id", id).eq("customer_company_id", companyId).is("deleted_at", null).maybeSingle(); return data; }
+export async function getAddress(companyId: string, id: string) { const supabase = await createClient(); const { data } = await supabase.from("customer_addresses").select("*").eq("id", id).eq("customer_company_id", companyId).is("deleted_at", null).maybeSingle(); return data; }

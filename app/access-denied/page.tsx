@@ -1,0 +1,2 @@
+import { AccessDeniedActions } from "@/components/auth/access-denied-actions";
+export default function AccessDeniedPage(){return <main className="grid min-h-screen place-items-center bg-slate-100 p-5"><section className="card max-w-md p-8 text-center"><h1 className="text-xl font-bold">ERP access unavailable</h1><p className="mt-2 text-sm leading-6 text-slate-500">Your ERP account is unlinked, disabled, or associated with an inactive employee. Please contact your administrator.</p><AccessDeniedActions/></section></main>}

@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function NotFound() { return <main className="grid min-h-screen place-items-center p-6"><div className="card max-w-md p-8 text-center"><p className="text-sm font-bold text-cyan-700">404</p><h1 className="mt-2 text-xl font-semibold">Page not found</h1><p className="mt-2 text-sm text-slate-500">The requested ERP page does not exist.</p><Link className="button-primary mt-5" href="/dashboard">Return to dashboard</Link></div></main>; }

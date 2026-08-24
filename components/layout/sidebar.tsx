@@ -1,0 +1,23 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { KeyRound, X } from "lucide-react";
+import { branding } from "@/lib/branding";
+import { primaryNavigation, settingsNavigation } from "@/lib/modules";
+import { LogoutButton } from "@/components/auth/logout-button";
+
+export function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: () => void }) {
+  const pathname = usePathname();
+  return <>
+    {open && <button className="fixed inset-0 z-40 bg-slate-950/35 lg:hidden" aria-label="Close navigation" onClick={onClose}/>} 
+    <aside className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`} aria-label="Primary navigation">
+      <div className="flex h-16 items-center border-b border-slate-100 px-4"><div className="grid size-9 place-items-center rounded-lg bg-cyan-800 font-bold text-white">A</div><div className="ml-3"><p className="text-sm font-bold tracking-wide">{branding.shortName}</p><p className="text-[11px] text-slate-400">ERP</p></div><button className="ml-auto p-2 text-slate-500 lg:hidden" onClick={onClose} aria-label="Close navigation"><X size={20}/></button></div>
+      <nav className="flex-1 overflow-y-auto px-3 py-3">
+        <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Workspace</p>
+        <div className="space-y-0.5">{primaryNavigation.map((item) => { const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`)); const Icon = item.icon; return <Link key={item.href} href={item.href} onClick={onClose} title={item.title} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition ${active ? "bg-cyan-50 text-cyan-800" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`}><Icon size={17} strokeWidth={active ? 2.2 : 1.8}/><span>{item.label}</span></Link>; })}</div>
+        <Link href="/employees/access" onClick={onClose} className={`mt-1 flex items-center gap-3 rounded-lg px-3 py-2 pl-7 text-[12px] font-medium ${pathname.startsWith("/employees/access") ? "bg-cyan-50 text-cyan-800" : "text-slate-500 hover:bg-slate-50"}`}><KeyRound size={15}/><span>ERP Access</span></Link>
+      </nav>
+      <div className="border-t border-slate-100 p-3"><Link href={settingsNavigation.href} onClick={onClose} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm ${pathname === "/settings" ? "bg-cyan-50 text-cyan-800" : "text-slate-600 hover:bg-slate-50"}`}><settingsNavigation.icon size={18}/><span>Settings</span></Link><LogoutButton /></div>
+    </aside>
+  </>;
+}

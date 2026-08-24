@@ -1,0 +1,2 @@
+import { SetPasswordForm } from "@/components/auth/set-password-form";
+export default function SetPasswordPage(){return <main className="grid min-h-screen place-items-center bg-slate-100 p-5"><section className="card w-full max-w-sm p-6"><h1 className="text-xl font-bold">Set your password</h1><p className="mt-1 text-sm text-slate-500">Complete your secure ERP account setup.</p><SetPasswordForm/></section></main>}
