@@ -1,0 +1,1 @@
+import{redirect}from"next/navigation";export default function Dispatch(){redirect("/dispatch/packing-lists")}

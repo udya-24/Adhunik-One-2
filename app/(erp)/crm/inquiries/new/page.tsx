@@ -1,0 +1,1 @@
+﻿import{PageHeader}from"@/components/ui/page-header";import{InquiryForm}from"@/components/crm/inquiry-form";import{crmOptions}from"@/lib/crm/data";export default async function NewInquiry(){return <><PageHeader title="New Inquiry" description="The permanent inquiry number is allocated only after successful creation."/><InquiryForm item={null} options={await crmOptions()}/></>}
