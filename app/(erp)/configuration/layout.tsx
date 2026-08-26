@@ -1,2 +1,1 @@
-﻿import { redirect } from "next/navigation";import { requireAdmin } from "@/lib/identity/data";
-export default async function ConfigurationLayout({children}:{children:React.ReactNode}){try{await requireAdmin()}catch{redirect("/dashboard")}return children}
+import{ModuleTabs}from'@/components/security/module-tabs';export default function Layout({children}:{children:React.ReactNode}){return <ModuleTabs moduleKey='configuration'>{children}</ModuleTabs>}

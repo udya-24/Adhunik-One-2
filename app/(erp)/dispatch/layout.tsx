@@ -1,1 +1,1 @@
-export default function DispatchLayout({children}:{children:React.ReactNode}){return <div className="space-y-6">{children}</div>}
+import{ModuleTabs}from'@/components/security/module-tabs';export default function Layout({children}:{children:React.ReactNode}){return <ModuleTabs moduleKey='dispatch'>{children}</ModuleTabs>}

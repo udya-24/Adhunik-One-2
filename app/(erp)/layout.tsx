@@ -1,4 +1,1 @@
-import { redirect } from "next/navigation";
-import { AppShell } from "@/components/layout/app-shell";
-import { createClient } from "@/lib/supabase/server";
-export default async function ErpLayout({ children }: { children: React.ReactNode }) { const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) redirect("/login"); return <AppShell email={user.email ?? "Authenticated user"}>{children}</AppShell>; }
+import{redirect}from'next/navigation';import{AppShell}from'@/components/layout/app-shell';import{createClient}from'@/lib/supabase/server';import{shellAccess}from'@/lib/security/access';export default async function ErpLayout({children}:{children:React.ReactNode}){const supabase=await createClient();const{data:{user}}=await supabase.auth.getUser();if(!user)redirect('/login');const access=await shellAccess();return <AppShell email={user.email??'Authenticated user'}access={access}>{children}</AppShell>}

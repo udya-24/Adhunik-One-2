@@ -1,0 +1,10 @@
+import'server-only';import{cache}from'react';import{redirect}from'next/navigation';import{createClient}from'@/lib/supabase/server';import{permissionModules,purchaseSections,type PurchaseSectionKey,type SectionGrant,firstVisibleHref}from'./permissions';
+export const currentAccess=cache(async()=>{const db=await createClient();const[{data:rows},{data:admin}]=await Promise.all([db.rpc('get_my_erp_permissions' as never),db.rpc('is_erp_admin')]);const grants:Record<string,SectionGrant>={};for(const row of (rows??[])as {section_key:string;can_view:boolean;can_edit:boolean}[])grants[row.section_key]={canView:row.can_view,canEdit:row.can_edit};return{admin:Boolean(admin),grants}});
+export async function requireView(section:string){const access=await currentAccess();if(!access.grants[section]?.canView)redirect('/access-denied');return access.grants[section]}
+export async function requireEdit(section:string){const grant=await requireView(section);if(!grant.canEdit)redirect('/access-denied');return grant}
+export async function assertEdit(section:string){const access=await currentAccess();if(!access.grants[section]?.canEdit)throw new Error('You do not have Edit permission for this section.')}
+export async function moduleLanding(moduleKey:string){const access=await currentAccess();return{...access,href:firstVisibleHref(access.grants,moduleKey)}}
+export async function currentPurchaseAccess(){const{grants}=await currentAccess();return Object.fromEntries(purchaseSections.map(x=>[x.key,grants[x.key]??{canView:false,canEdit:false}]))as Record<PurchaseSectionKey,SectionGrant>}
+export async function requirePurchaseView(section:PurchaseSectionKey){return requireView(section)}export async function requirePurchaseEdit(section:PurchaseSectionKey){return requireEdit(section)}
+export async function purchaseLanding(){const grants=await currentPurchaseAccess();return{grants,href:firstVisibleHref(grants,'purchase')}}
+export async function shellAccess(){const access=await currentAccess();return{admin:access.admin,modules:permissionModules.filter(m=>m.sections.some(s=>access.grants[s.key]?.canView)).map(m=>m.key)}}

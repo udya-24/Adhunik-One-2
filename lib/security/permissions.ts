@@ -1,0 +1,15 @@
+export type SectionGrant={canView:boolean;canEdit:boolean};
+export const permissionModules=[
+ {key:'employees',label:'Employees',sections:[{key:'employees.directory',label:'Employee Directory',href:'/employees'}]},
+ {key:'configuration',label:'Configuration',sections:[{key:'configuration.companies',label:'Companies & Contacts',href:'/configuration'},{key:'configuration.masters',label:'Business & Item Masters',href:'/configuration'},{key:'configuration.document_settings',label:'Document Settings',href:'/configuration/document-settings'}]},
+ {key:'crm',label:'CRM',sections:[{key:'crm.overview',label:'Overview',href:'/crm'},{key:'crm.inquiries',label:'Inquiries',href:'/crm/inquiries'},{key:'crm.orders',label:'Orders',href:'/crm/orders'},{key:'crm.follow_ups',label:'Follow-ups',href:'/crm/follow-ups'}]},
+ {key:'sales',label:'Sales',sections:[{key:'sales.overview',label:'Overview',href:'/sales'},{key:'sales.proforma_invoices',label:'Proforma Invoices',href:'/sales/proforma-invoices'}]},
+ {key:'dispatch',label:'Dispatch',sections:[{key:'dispatch.overview',label:'Overview',href:'/dispatch'},{key:'dispatch.packing_lists',label:'Packing Lists',href:'/dispatch/packing-lists'},{key:'dispatch.dispatches',label:'Dispatches',href:'/dispatch/dispatches'}]},
+ {key:'inventory',label:'Inventory',sections:[{key:'inventory.overview',label:'Overview',href:'/inventory'},{key:'inventory.items',label:'Item Master',href:'/inventory/items'},{key:'inventory.stock',label:'Stock Register',href:'/inventory/stock'},{key:'inventory.stock_in',label:'Stock In & Pending Receipts',href:'/inventory/pending-receipts'},{key:'inventory.movements',label:'Stock Movements',href:'/inventory/movements/new'},{key:'inventory.ledger',label:'Stock Ledger',href:'/inventory/ledger'},{key:'inventory.locations',label:'Stock Locations',href:'/inventory/locations'}]},
+ {key:'purchase',label:'Purchase',sections:[{key:'purchase.overview',label:'Overview',href:'/purchase'},{key:'purchase.indents',label:'Purchase Indents',href:'/purchase/indents'},{key:'purchase.suppliers',label:'Suppliers',href:'/purchase/suppliers'},{key:'purchase.orders',label:'Purchase Orders',href:'/purchase/orders'},{key:'purchase.material_receipts',label:'Material Receipts',href:'/purchase/receipts'}]},
+]as const;
+export const purchaseSections=permissionModules.find(x=>x.key==='purchase')!.sections;export type PurchaseSectionKey=typeof purchaseSections[number]['key'];
+export function normalizeGrant(canView:boolean,canEdit:boolean):SectionGrant{return{canView:canView||canEdit,canEdit}}
+export function moduleVisible(grants:Record<string,SectionGrant>,moduleKey:string){return Object.entries(grants).some(([key,value])=>key.startsWith(moduleKey+'.')&&value.canView)}
+export function firstVisibleHref(grants:Record<string,SectionGrant>,moduleKey:string){return permissionModules.find(x=>x.key===moduleKey)?.sections.find(x=>grants[x.key]?.canView)?.href??null}
+export function firstVisiblePurchaseHref(grants:Record<string,SectionGrant>){return firstVisibleHref(grants,'purchase')}
