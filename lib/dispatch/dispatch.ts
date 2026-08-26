@@ -1,0 +1,5 @@
+﻿export type DispatchPackageMetric={id:string;netWeight:number;grossWeight:number};
+export function dispatchTotals(packages:DispatchPackageMetric[],selectedIds:Iterable<string>){const selected=new Set(selectedIds),rows=packages.filter(x=>selected.has(x.id));return{packages:rows.length,netWeight:rows.reduce((s,x)=>s+x.netWeight,0),grossWeight:rows.reduce((s,x)=>s+x.grossWeight,0)}}
+export function packingListDispatchStatus(totalPackages:number,dispatchedPackages:number){if(dispatchedPackages<=0)return"FINALIZED"as const;if(dispatchedPackages<totalPackages)return"PARTIALLY_DISPATCHED"as const;return"DISPATCHED"as const}
+export function piPhysicalDispatchStatus(piQuantity:number,packedQuantity:number,dispatchedQuantity:number){if(dispatchedQuantity<=0)return"Not Dispatched";return packedQuantity>=piQuantity&&dispatchedQuantity>=piQuantity?"Fully Dispatched":"Partially Dispatched"}
+export const hasDuplicatePackageIds=(ids:string[])=>new Set(ids).size!==ids.length;

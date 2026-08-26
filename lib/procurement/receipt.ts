@@ -1,0 +1,2 @@
+export function receiptBalance(ordered:number,previous:number,receivedNow:number){if(ordered<=0||previous<0||receivedNow<0||previous+receivedNow>ordered)throw new Error("Over-receipt is not allowed");return{totalReceived:previous+receivedNow,pending:ordered-previous-receivedNow,status:previous+receivedNow===ordered?"FULLY_RECEIVED":previous+receivedNow>0?"PARTIALLY_RECEIVED":"CONFIRMED"}}
+export function validateQuality(received:number,accepted:number,rejected:number){return received>0&&accepted>=0&&rejected>=0&&accepted+rejected===received}

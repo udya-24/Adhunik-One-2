@@ -1,0 +1,5 @@
+export function decimalToScaled(value:string|number,scale:number){const raw=String(value??0).trim();if(!/^\d*(\.\d*)?$/.test(raw))return BigInt(0);const[a="0",b=""]=raw.split(".");return BigInt(a||"0")*BigInt(10)**BigInt(scale)+BigInt((b+"0".repeat(scale)).slice(0,scale)||"0")}
+function roundDiv(n:bigint,d:bigint){return(n+d/BigInt(2))/d}
+export function lineAmountCents(quantity:string|number,rate:string|number){return roundDiv(decimalToScaled(quantity,3)*decimalToScaled(rate,4),BigInt(100000))}
+export function commercialTotals(lines:{quantity:string|number;unit_rate:string|number}[],gstRate:string|number,freight:string|number){const subtotalCents=lines.reduce((s,x)=>s+lineAmountCents(x.quantity,x.unit_rate),BigInt(0));const gstAmountCents=roundDiv(subtotalCents*decimalToScaled(gstRate,4),BigInt(1000000));const freightCents=decimalToScaled(freight,2);return{subtotalCents,gstAmountCents,freightCents,grandTotalCents:subtotalCents+gstAmountCents+freightCents}}
+export function formatInr(cents:bigint){const n=Number(cents)/100;return new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",minimumFractionDigits:2}).format(n)}

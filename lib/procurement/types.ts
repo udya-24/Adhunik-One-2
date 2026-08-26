@@ -1,0 +1,1 @@
+import type{buildPODocument}from"./po-document";export type AwaitedReturn=Awaited<ReturnType<typeof buildPODocument>>;

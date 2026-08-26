@@ -1,0 +1,1 @@
+import{PageHeader}from"@/components/ui/page-header";import{SupplierForm}from"@/components/purchase/supplier-form";import{saveSupplier}from"../../procurement-actions";export default function Page(){return <><PageHeader title="Add Supplier"description="Supplier Code is allocated automatically when saved."/><SupplierForm action={saveSupplier.bind(null,null)}/></>}
