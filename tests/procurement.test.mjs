@@ -1,5 +1,11 @@
-import test from"node:test";import assert from"node:assert/strict";import{receiptBalance,validateQuality}from"../lib/procurement/receipt.ts";
-test("partial receipt tracks received and pending",()=>assert.deepEqual(receiptBalance(100,0,60),{totalReceived:60,pending:40,status:"PARTIALLY_RECEIVED"}));
-test("second receipt fully receives PO",()=>assert.deepEqual(receiptBalance(100,60,40),{totalReceived:100,pending:0,status:"FULLY_RECEIVED"}));
-test("over receipt is blocked",()=>assert.throws(()=>receiptBalance(100,100,1),/Over-receipt/));
-test("accepted and rejected must equal receipt",()=>{assert.equal(validateQuality(100,95,5),true);assert.equal(validateQuality(100,95,4),false)});
+import test from'node:test';import assert from'node:assert/strict';import{receiptBalance,validateQuality,validateInventoryPosting,postingStatus}from'../lib/procurement/receipt.ts';
+test('partial receipt tracks received and pending',()=>assert.deepEqual(receiptBalance(100,0,60),{totalReceived:60,pending:40,status:'PARTIALLY_RECEIVED'}));
+test('second receipt fully receives PO',()=>assert.deepEqual(receiptBalance(100,60,40),{totalReceived:100,pending:0,status:'FULLY_RECEIVED'}));
+test('over receipt is blocked',()=>assert.throws(()=>receiptBalance(100,100,1),/Over-receipt/));
+test('accepted and rejected must equal receipt',()=>{assert.equal(validateQuality(100,95,5),true);assert.equal(validateQuality(100,95,4),false)});
+test('partial inventory posting returns the accepted remainder',()=>assert.equal(validateInventoryPosting(100,0,60),40));
+test('second inventory posting can complete the accepted quantity',()=>assert.equal(validateInventoryPosting(100,60,40),0));
+test('inventory posting cannot exceed accepted quantity',()=>assert.throws(()=>validateInventoryPosting(100,80,25),/exceeds remaining/));
+test('duplicate inventory posting is rejected when no accepted quantity remains',()=>assert.throws(()=>validateInventoryPosting(100,100,1),/exceeds remaining/));
+test('multi-line receipt derives partial status',()=>assert.equal(postingStatus([{accepted_quantity:100,posted:100},{accepted_quantity:50,posted:25},{accepted_quantity:200,posted:0}]),'PARTIALLY_POSTED'));
+test('zero-accepted lines do not prevent full status',()=>assert.equal(postingStatus([{accepted_quantity:100,posted:100},{accepted_quantity:0,posted:0}]),'FULLY_POSTED'));

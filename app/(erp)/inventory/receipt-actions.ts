@@ -1,0 +1,7 @@
+'use server';
+import {revalidatePath}from'next/cache';
+import {redirect}from'next/navigation';
+import {crmIdentity}from'@/lib/crm/data';
+export type ReceiptStockState={error?:string};
+const value=(form:FormData,key:string)=>String(form.get(key)??'').trim();
+export async function postReceiptToInventory(receiptId:string,_:ReceiptStockState,form:FormData):Promise<ReceiptStockState>{try{const{db}=await crmIdentity();let items:Record<string,unknown>[];try{items=JSON.parse(value(form,'items'))}catch{return{error:'Invalid receipt posting items'}}const{error}=await db.rpc('post_material_receipt_to_inventory' as never,{p_receipt_id:receiptId,p_location_id:value(form,'location_id'),p_items:items,p_request_id:value(form,'request_id')} as never);if(error)return{error:error.message};revalidatePath('/inventory');revalidatePath('/inventory/pending-receipts');revalidatePath('/inventory/ledger');revalidatePath('/purchase/receipts/'+receiptId);redirect('/purchase/receipts/'+receiptId)}catch(error){if((error as Error).message==='NEXT_REDIRECT')throw error;return{error:(error as Error).message}}}
