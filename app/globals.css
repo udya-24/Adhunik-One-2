@@ -13,3 +13,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .button-primary { display: inline-flex; min-height: 2.65rem; align-items: center; justify-content: center; gap: .5rem; border: 0; border-radius: .625rem; background: #155e75; padding: .65rem 1rem; color: white; font-weight: 600; cursor: pointer; transition: background .15s; }
 .button-primary:hover { background: #164e63; }
 .button-primary:disabled { cursor: not-allowed; opacity: .65; }
+
+/* Payroll variable forms are rendered in a compact register row. Keep the
+   individual input meanings visible when a draft or reopened run is editable. */
+form.grid.grid-cols-5:has(> input[name="percentage"])::before {
+  content: "CRM Incentive %     Overtime Amount     Adjustment Amount     Adjustment Reason     Action";
+  grid-column: 1 / -1;
+  white-space: pre-wrap;
+  color: #64748b;
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  word-spacing: .2rem;
+}
