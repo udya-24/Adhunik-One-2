@@ -24,7 +24,7 @@ export const primaryNavigation: ModuleDefinition[] = [
   { label: "Inventory", title: "Inventory Foundation & Enterprise Item Master", href: "/inventory", phase: "Phase 7", icon: Boxes },
   { label: "Purchase", title: "Purchase Management & Procurement Execution", href: "/purchase", phase: "Phase 8", icon: ShoppingCart },
   { label: "Production", title: "Production / Manufacturing", href: "/production", phase: "Phase 9", icon: Factory },
-  { label: "Finance", title: "Finance & Accounts", href: "/finance", phase: "Phase 10", icon: Landmark },
+  { label: "Finance", title: "Finance & Accounts", href: "/finance", phase: "Phase 11A", icon: Landmark },
   { label: "HR & Payroll", title: "HR & Payroll Foundation", href: "/hr-payroll", phase: "Phase 10A", icon: HardHat },
   { label: "Documents", title: "Enterprise Document Management System", href: "/documents", phase: "Phase 12", icon: FileText },
   { label: "Approvals", title: "Enterprise Workflow & Approval Engine", href: "/approvals", phase: "Phase 13", icon: ClipboardCheck },

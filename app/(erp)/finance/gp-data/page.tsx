@@ -1,0 +1,5 @@
+import {requireView} from '@/lib/security/access';
+import {gpRecords,gpThreshold} from '@/lib/finance/data';
+import {PageHeader} from '@/components/ui/page-header';
+import {GpWorkspace} from '@/components/finance/gp-workspace';
+export default async function Page({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){const grant=await requireView('finance.gp_data'),raw=await searchParams;const filters=Object.fromEntries(Object.entries(raw).filter((x):x is [string,string]=>typeof x[1]==='string'));const result=await Promise.all([gpRecords(),gpThreshold()]).catch(()=>null);if(!result){return <><PageHeader title="GP Data" description="Finance & Accounts"/><p role="alert" className="card p-5 text-sm text-red-700">GP data could not be loaded. Verify the Phase 11A migration has been applied and retry.</p></>;}const[records,threshold]=result;return <><PageHeader title="GP Data" description="Manual GP invoices with historical costing and private Bill / LR documents."/><GpWorkspace records={records} threshold={threshold} analytics={false} canEdit={grant.canEdit} canViewGp initialFilters={filters}/></>;}
