@@ -1,8 +1,8 @@
-﻿# Adhunik ERP
+# Adhunik ERP
 
 Enterprise Management System for Adhunik Switchgears.
 
-**Current Module: Module 2 â€” Employee & Identity Management (Part B in development)**
+**Current Module: Module 2 — Employee & Identity Management (Part B in development)**
 
 ## Technology
 
@@ -38,9 +38,9 @@ Only the browser-safe Supabase anon/publishable key belongs in this application.
 
 ## Supabase setup
 
-1. In the Supabase dashboard, open **Authentication â†’ Providers â†’ Email** and enable Email/Password authentication.
+1. In the Supabase dashboard, open **Authentication → Providers → Email** and enable Email/Password authentication.
 2. For an internal ERP, disable public sign-up if employees should only be created by an administrator.
-3. Open **Authentication â†’ Users â†’ Add user â†’ Create new user** and enter the initial administrator email and a strong password. Auto-confirm the user when prompted.
+3. Open **Authentication → Users → Add user → Create new user** and enter the initial administrator email and a strong password. Auto-confirm the user when prompted.
 4. Open **SQL Editor**, paste the complete contents of `supabase/migrations/202608240001_phase_1b_enterprise_foundation.sql`, and run it once.
 5. Confirm that `customer_companies`, `customer_contacts`, `customer_addresses`, `departments`, `designations`, and `teams` appear in Table Editor.
 6. In Table Editor, verify that RLS is enabled for all six tables. The temporary policies allow authenticated users to select, insert, and update records; anonymous users receive no access.
@@ -52,7 +52,7 @@ After the Module 1 migration, run the complete `supabase/migrations/202608240002
 
 ### Phase 2B migration
 
-Run `supabase/migrations/202608240003_phase_2b_identity_access.sql` once after Phase 2A. It creates the three basic roles, ERP profiles, invitation records, access-check functions, RLS policies, and a bootstrap Admin profile for the earliest existing Auth user. Add `/auth/callback` for each deployment origin to Supabase **Authentication â†’ URL Configuration â†’ Redirect URLs**.
+Run `supabase/migrations/202608240003_phase_2b_identity_access.sql` once after Phase 2A. It creates the three basic roles, ERP profiles, invitation records, access-check functions, RLS policies, and a bootstrap Admin profile for the earliest existing Auth user. Add `/auth/callback` for each deployment origin to Supabase **Authentication → URL Configuration → Redirect URLs**.
 
 
 ### Phase 3A migration
@@ -62,7 +62,7 @@ Run `supabase/migrations/202608240004_phase_3a_configuration_masters.sql` once a
 ### Phase 3B migration
 
 Run `supabase/migrations/202608240005_phase_3b_business_configuration.sql` once after Phase 3A. It preserves existing Employee and Company codes, centralizes future numbering behind protected atomic database triggers, adds Financial Years, General/System Settings, and Payment Terms, and migrates existing company payment-term text into UUID master relationships. Live counters are not writable through the application or authenticated database role.
-For production, add both environment variables to the Vercel project for the required environments, then redeploy. Add the production deployment URL under Supabase **Authentication â†’ URL Configuration** as the Site URL. No machine-specific configuration is required.
+For production, add both environment variables to the Vercel project for the required environments, then redeploy. Add the production deployment URL under Supabase **Authentication → URL Configuration** as the Site URL. No machine-specific configuration is required.
 
 ## Commands
 
@@ -86,3 +86,30 @@ The current authenticated-user RLS policy is deliberately temporary. Module 2 wi
 Employee Master stores employee records independently from ERP login accounts. It includes database-generated permanent employee codes, organization mapping, multiple team assignments, reporting managers, contacts, emergency information, private employee photos, addresses, search/filtering, pagination, and active/inactive lifecycle management. It does not create Supabase Auth users, store passwords, or implement roles, access control, attendance, payroll, or other HR workflows.
 
 See [ROADMAP.md](./ROADMAP.md) for phase tracking.
+
+
+### CRM / PI workflow update (09-Oct-2026)
+
+Apply `202610090032_require_customer_acceptance.sql` followed by
+`202610090033_order_snapshots_and_draft_pi.sql`. These migrations update functions
+and do not add or change table columns. New PIs inherit Order address snapshots;
+editing an Order never changes Customer Master addresses. Existing PIs retain their
+stored snapshots. Packing and dispatch require acceptance of the latest revision.
+
+Display dates use `lib/formatting/date.ts` in Asia/Kolkata. Calendar dates display as
+`09-Oct-2026`; timestamps display as `09-Oct-2026 06:24 AM`. Native form controls,
+API values and database timestamps retain their ISO formats. UTF-8 source files and
+the shared Supabase JSON transport repair legacy encoding corruption without
+changing binary uploads/downloads. PI exports render current snapshots rather than
+serving a cached document from an earlier edit.
+
+Validation:
+
+```sh
+node --experimental-strip-types --test tests/*.test.mjs
+node tests/sales-workflow-database.mjs
+```
+
+The database validation script uses the same optional PGlite runtime under
+`node_modules/.cache/gp-validation` as `tests/finance-database.mjs`; it tests a local
+PostgreSQL instance and does not connect to the deployed database.

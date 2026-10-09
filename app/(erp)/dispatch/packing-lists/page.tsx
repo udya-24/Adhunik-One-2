@@ -1,3 +1,5 @@
+
+import { formatDate } from "@/lib/formatting/date";
 import Link from "next/link";
 import {createPackingList} from "@/app/(erp)/dispatch/actions";
 import {PageHeader} from "@/components/ui/page-header";
@@ -25,7 +27,7 @@ export default async function Register({searchParams}:{searchParams:Promise<Reco
       <div className="overflow-x-auto"><table className="w-full min-w-[920px] text-left text-sm">
         <thead className="bg-slate-50"><tr>{["PI Number","PI Date","Customer","Order","Total Items","Total Quantity","Packing Status","Action"].map(label=><th className="px-3 py-3" key={label}>{label}</th>)}</tr></thead>
         <tbody className="divide-y">{awaiting.map(pi=><tr key={pi.id}>
-          <td className="px-3 py-3 font-semibold">{pi.pi_number}</td><td className="px-3">{new Date(pi.pi_date).toLocaleDateString("en-IN")}</td><td className="px-3">{pi.customer_name}</td><td className="px-3">{pi.order_number}</td><td className="px-3">{pi.total_items}</td><td className="px-3">{pi.remaining_quantity}</td><td className="px-3">Awaiting Packing</td>
+          <td className="px-3 py-3 font-semibold">{pi.pi_number}</td><td className="px-3">{formatDate(pi.pi_date)}</td><td className="px-3">{pi.customer_name}</td><td className="px-3">{pi.order_number}</td><td className="px-3">{pi.total_items}</td><td className="px-3">{pi.remaining_quantity}</td><td className="px-3">Awaiting Packing</td>
           <td className="px-3">{grant.canEdit?<form action={createPackingList.bind(null,pi.id)}><button className="font-semibold text-cyan-700">Create Packing List</button></form>:<span className="text-slate-400">View only</span>}</td>
         </tr>)}</tbody>
       </table></div>
@@ -40,7 +42,7 @@ export default async function Register({searchParams}:{searchParams:Promise<Reco
       </form>
       <section className="card overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left text-sm">
         <thead className="bg-slate-50"><tr>{["Packing List","Date","PI","Order","Customer","Packages","Gross kg","Status","Action"].map(label=><th className="px-3 py-3" key={label}>{label}</th>)}</tr></thead>
-        <tbody className="divide-y">{rows.map(item=><tr key={item.id}><td className="px-3 py-3 font-semibold">{item.packing_list_number}</td><td className="px-3">{new Date(item.packing_date).toLocaleDateString("en-IN")}</td><td className="px-3">{item.pi_number_snapshot}</td><td className="px-3">{item.order_number_snapshot}</td><td className="px-3">{item.customer_name_snapshot}</td><td className="px-3">{item.total_packages}</td><td className="px-3">{Number(item.total_gross_weight).toFixed(3)}</td><td className="px-3">{item.status}</td><td className="px-3"><Link className="font-semibold text-cyan-700" href={`/dispatch/packing-lists/${item.id}`}>View</Link></td></tr>)}</tbody>
+        <tbody className="divide-y">{rows.map(item=><tr key={item.id}><td className="px-3 py-3 font-semibold">{item.packing_list_number}</td><td className="px-3">{formatDate(item.packing_date)}</td><td className="px-3">{item.pi_number_snapshot}</td><td className="px-3">{item.order_number_snapshot}</td><td className="px-3">{item.customer_name_snapshot}</td><td className="px-3">{item.total_packages}</td><td className="px-3">{Number(item.total_gross_weight).toFixed(3)}</td><td className="px-3">{item.status}</td><td className="px-3"><Link className="font-semibold text-cyan-700" href={`/dispatch/packing-lists/${item.id}`}>View</Link></td></tr>)}</tbody>
       </table></div>{!rows.length&&<p className="p-8 text-center text-sm text-slate-500">No Packing Lists match these filters.</p>}</section>
     </>}
   </>;
