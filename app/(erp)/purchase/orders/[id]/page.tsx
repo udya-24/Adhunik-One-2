@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/ui/page-header';
 import { cancelPO, closePO, confirmPO, createPORevision } from '../../procurement-actions';
-import { orderDetail } from '@/lib/procurement/data';
+import { orderDetail, orderHasReceipts } from '@/lib/procurement/data';
 import { orderRevisionHistory, type PurchaseOrderVersion } from '@/lib/procurement/revisions';
 import { currentPurchaseAccess } from '@/lib/security/access';
 
@@ -16,7 +16,7 @@ export default async function Page({params}:{params:Promise<{id:string}>}){
  const[data,access]=await Promise.all([orderDetail(id),currentPurchaseAccess()]);
  if(!data.item)notFound();
  const order=data.item as PurchaseOrderVersion;
- const history=await orderRevisionHistory(order.root_po_id);
+ const [history,hasReceipts]=await Promise.all([orderRevisionHistory(order.root_po_id),orderHasReceipts(id)]);
  const canEdit=access['purchase.orders'].canEdit,canReceipt=access['purchase.material_receipts'].canEdit;
  const isRevision=order.revision_number>0,isCurrent=currentStatuses.includes(order.status);
  return <>
@@ -27,8 +27,9 @@ export default async function Page({params}:{params:Promise<{id:string}>}){
    {canEdit&&isCurrent&&<form action={createPORevision.bind(null,id)}className='flex flex-wrap gap-2 rounded border p-2'><input className='field min-w-72'name='revision_reason'placeholder='Revision Reason *'required/><button className='button-primary'>Create Revision</button></form>}
    {canReceipt&&isCurrent&&['CONFIRMED','PARTIALLY_RECEIVED'].includes(order.status)&&<Link className='button-primary'href={`/purchase/receipts/new?po=${id}`}>Record Material Receipt</Link>}
    {canEdit&&order.status==='FULLY_RECEIVED'&&<form action={closePO.bind(null,id)}><button className='button-primary'>Close PO</button></form>}
-   {canEdit&&(order.status==='DRAFT'||(!isRevision&&order.status==='CONFIRMED'))&&<form action={cancelPO.bind(null,id)}className='flex gap-2'><input className='field'name='reason'placeholder='Cancellation reason'required/><button className='rounded border border-red-300 px-3 text-red-700'>Cancel PO</button></form>}
+   {canEdit&&(order.status==='DRAFT'||isCurrent)&&!hasReceipts&&<form action={cancelPO.bind(null,id)}className='flex gap-2'><input className='field'name='reason'placeholder='Cancellation reason'required/><button className='rounded border border-red-300 px-3 text-red-700'>Cancel PO</button></form>}
   </div>
+  {canEdit&&hasReceipts&&(isCurrent||order.status==='DRAFT')&&<p className='rounded bg-amber-50 p-3 text-sm text-amber-800'>Material Receipt already exists. Purchase Order cannot be cancelled.</p>}
   {isRevision&&<section className='card grid gap-2 p-5 md:grid-cols-2'><p><b>Revision:</b> {String(order.revision_number).padStart(2,'0')}</p><p><b>Revision Reason:</b> {order.revision_reason}</p></section>}
   <section className='card grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3'><p><b>PO Date:</b> {formatDate(order.po_date)}</p><p><b>Indent:</b> {data.indent}</p><p><b>Expected Delivery:</b> {formatDate(order.expected_delivery_date)}</p><p><b>Payment Terms:</b> {order.payment_terms??'—'}</p><p><b>Delivery Terms:</b> {order.delivery_terms??'—'}</p><p><b>Billing:</b> {order.billing_address_snapshot}</p><p><b>Delivery:</b> {order.delivery_address_snapshot}</p><p><b>Remarks:</b> {order.remarks??'—'}</p></section>
   <section className='card p-5'><h2 className='font-semibold'>Supplier Snapshot</h2><p>{order.supplier_code_snapshot} — {order.supplier_name_snapshot}</p><p className='text-sm'>GSTIN: {order.supplier_gstin_snapshot??'—'} · Contact: {order.supplier_contact_snapshot??'—'} · Phone: {order.supplier_phone_snapshot??'—'}</p><p className='text-sm'>{order.supplier_address_snapshot??'—'}</p></section>
