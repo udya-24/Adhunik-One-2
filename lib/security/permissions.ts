@@ -15,3 +15,6 @@ export function normalizeGrant(canView:boolean,canEdit:boolean):SectionGrant{ret
 export function moduleVisible(grants:Record<string,SectionGrant>,moduleKey:string){return Object.entries(grants).some(([key,value])=>key.startsWith(moduleKey+'.')&&value.canView)}
 export function firstVisibleHref(grants:Record<string,SectionGrant>,moduleKey:string){return permissionModules.find(x=>x.key===moduleKey)?.sections.find(x=>grants[x.key]?.canView)?.href??null}
 export function firstVisiblePurchaseHref(grants:Record<string,SectionGrant>){return firstVisibleHref(grants,'purchase')}
+
+// Management Approval shares existing Purchase Orders grants.
+export const purchaseTabs = purchaseSections.flatMap<{key:PurchaseSectionKey;label:string;href:string}>(section => section.key === 'purchase.orders' ? [section, {key: section.key, label: 'Management Approval', href: '/purchase/approvals'}] : [section]);
