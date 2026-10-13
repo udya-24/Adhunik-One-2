@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import ts from 'typescript';
+const source=fs.readFileSync('lib/finance/documents.ts','utf8')+'\n'+fs.readFileSync('lib/procurement/documents.ts','utf8').replace(/^import .*;\n/,'');
+const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const {validateCommercialFile}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
+const pdf=Uint8Array.from([37,80,68,70,45]);
+test('commercial documents accept PDF, JPG, JPEG and PNG signatures',()=>{assert.equal(validateCommercialFile('grn.PDF','application/pdf',pdf),'application/pdf');for(const ext of ['jpg','jpeg'])assert.equal(validateCommercialFile('invoice.'+ext,'image/jpeg',Uint8Array.from([255,216,255])),'image/jpeg');assert.equal(validateCommercialFile('invoice.png','image/png',Uint8Array.from([137,80,78,71,13,10,26,10])),'image/png');});
+test('1 MB is accepted and larger documents are rejected',()=>{const bytes=new Uint8Array(1048576);bytes.set(pdf);assert.equal(validateCommercialFile('invoice.pdf','application/pdf',bytes),'application/pdf');assert.throws(()=>validateCommercialFile('invoice.pdf','application/pdf',new Uint8Array(1048577)),/1 MB/);});
+test('empty, unsupported and disguised uploads are rejected',()=>{assert.throws(()=>validateCommercialFile('invoice.pdf','application/pdf',new Uint8Array()),/Documents/);assert.throws(()=>validateCommercialFile('invoice.exe','application/pdf',pdf),/must match/);assert.throws(()=>validateCommercialFile('invoice.png','image/png',pdf),/must match/);assert.throws(()=>validateCommercialFile('invoice.pdf','text/html',pdf),/must match/);});

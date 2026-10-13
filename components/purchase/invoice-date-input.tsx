@@ -1,0 +1,4 @@
+'use client';
+import {useState} from 'react';
+import {indiaDateInput} from '@/lib/formatting/date';
+export function InvoiceDateInput(){const[value,setValue]=useState(indiaDateInput());return <span className="field relative mt-1 block focus-within:ring-2 focus-within:ring-cyan-600"><span aria-hidden="true">{value?value.split('-').reverse().join('-'):'dd-mm-yyyy'} <span className="float-right">▦</span></span><input className="absolute inset-0 h-full w-full cursor-pointer opacity-0" type="date" lang="en-GB" aria-label="Invoice Date" name="invoice_date" required max={indiaDateInput()} value={value} onChange={event=>setValue(event.currentTarget.value)} onClick={event=>{try{event.currentTarget.showPicker();}catch{/* Keyboard entry remains available when showPicker is unsupported. */}}}/></span>;}

@@ -9,7 +9,7 @@ export async function procurementOverview(){const db=await createClient();const[
  const db=await createClient();
  const {data,error}=await db.rpc('purchase_receipt_workspace' as never);
  if(error)throw new Error(error.message);
- return data as unknown as {orders:Pick<PurchaseOrder,'id'|'root_po_id'|'revision_number'|'status'|'approval_source'|'po_number'|'supplier_name_snapshot'|'po_date'|'expected_delivery_date'>[];items:Pick<PurchaseOrderItem,'id'|'root_po_item_id'|'purchase_order_id'|'quantity'|'line_number'|'item_code_snapshot'|'item_name_snapshot'|'unit_snapshot'>[];receipts:Pick<MaterialReceipt,'id'|'purchase_order_id'|'receipt_number'|'status'>[];received:Record<string,number>};
+ return data as unknown as {orders:Pick<PurchaseOrder,'id'|'root_po_id'|'revision_number'|'status'|'approval_source'|'grand_total'|'po_number'|'supplier_name_snapshot'|'po_date'|'expected_delivery_date'>[];items:Pick<PurchaseOrderItem,'id'|'root_po_item_id'|'purchase_order_id'|'quantity'|'line_number'|'item_code_snapshot'|'item_name_snapshot'|'unit_snapshot'>[];receipts:Pick<MaterialReceipt,'id'|'purchase_order_id'|'receipt_number'|'status'>[];received:Record<string,number>};
 }
 export async function receiptQueue(f:Record<string,string>={}){
  const d=await receiptWorkspace();

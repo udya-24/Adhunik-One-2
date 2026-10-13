@@ -1,6 +1,6 @@
 export type SectionGrant={canView:boolean;canEdit:boolean};
 export const permissionModules=[
- {key:'finance',label:'Finance',sections:[{key:'finance.overview',label:'Overview',href:'/finance'},{key:'finance.gp_data',label:'GP Data',href:'/finance/gp-data'},{key:'finance.cogs_analytics',label:'COGS Analytics',href:'/finance/cogs-analytics'}]},
+ {key:'finance',label:'Finance',sections:[{key:'finance.overview',label:'Overview',href:'/finance'},{key:'finance.gp_data',label:'GP Data',href:'/finance/gp-data'},{key:'finance.vendor_payments',label:'Vendor Payments',href:'/finance/vendor-payments'},{key:'finance.cogs_analytics',label:'COGS Analytics',href:'/finance/cogs-analytics'}]},
  {key:'employees',label:'Employees',sections:[{key:'employees.directory',label:'Employee Directory',href:'/employees'}]},
  {key:'configuration',label:'Configuration',sections:[{key:'configuration.companies',label:'Companies & Contacts',href:'/configuration'},{key:'configuration.masters',label:'Business & Item Masters',href:'/configuration'},{key:'configuration.document_settings',label:'Document Settings',href:'/configuration/document-settings'}]},
  {key:'crm',label:'CRM',sections:[{key:'crm.overview',label:'Overview',href:'/crm'},{key:'crm.inquiries',label:'Inquiries',href:'/crm/inquiries'},{key:'crm.orders',label:'Orders',href:'/crm/orders'},{key:'crm.follow_ups',label:'Follow-ups',href:'/crm/follow-ups'}]},

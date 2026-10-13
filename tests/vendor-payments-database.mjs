@@ -1,0 +1,46 @@
+import {PGlite} from '../node_modules/.cache/gp-validation/node_modules/@electric-sql/pglite/dist/index.js';
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const db=new PGlite();
+// Reuse the existing purchase/approval fixture and regression suite before testing the additive migration.
+const fixture=fs.readFileSync('tests/purchase-receipts-database.mjs','utf8').replace(/^import .*;\r?\n/gm,'').replace('const db=new PGlite();','').replace('await db.close();','');
+const suite=String.raw`
+await db.exec("set test.permissions='true'");
+await db.exec("create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text,owner_id text);alter table storage.objects enable row level security;create table public.erp_permission_sections(module_key text,section_key text,module_name text,section_name text,sort_order integer);");
+await db.exec(read('202610130001_receipt_vendor_payments.sql'));
+await check('legacy receipts are backfilled without inventing invoice dates',async()=>{assert.equal(await scalar('select count(*)::integer from public.vendor_payments'),await scalar('select count(*)::integer from public.material_receipts'));assert.equal(await scalar('select count(*)::integer from public.material_receipts where invoice_date is not null'),0);});
+const fresh=await order('PO/2026/COMMERCIAL', 'CONFIRMED');
+await db.query('update public.purchase_orders set grand_total=1200 where id=$1',[fresh.id]);
+await call('authorized_approve_purchase_order',[fresh.id]);
+const lineItems=[{purchase_order_item_id:fresh.line,received_quantity:100,accepted_quantity:100,rejected_quantity:0}];
+await check('missing and future invoice dates are rejected',async()=>{await assert.rejects(call('authorized_record_material_receipt',[fresh.id,{},lineItems]),/Invoice Date/);await assert.rejects(call('authorized_record_material_receipt',[fresh.id,{invoice_date:'2999-01-01'},lineItems]),/Invoice Date/);});
+await db.query("insert into storage.objects(bucket_id,name,owner_id) values('purchase-commercial-documents','test/invoice.pdf',$1),('purchase-commercial-documents','test/foreign.pdf','foreign-owner')",[uid]);
+await check('foreign document paths cannot be attached',async()=>assert.rejects(call('authorized_record_material_receipt',[fresh.id,{invoice_date:'2026-01-05',invoice_file_url:'test/foreign.pdf'},lineItems]),/Invalid uploaded document/));
+const commercial=await call('authorized_record_material_receipt',[fresh.id,{invoice_date:'2026-01-05',invoice:'INV-1',invoice_value:1,invoice_file_name:'invoice.pdf',invoice_file_url:'test/invoice.pdf'},lineItems]);
+const payable=await scalar('select id from public.vendor_payments where material_receipt_id=$1',[commercial]);
+await check('invoice date, GRN, PO value and payable are saved atomically',async()=>{const r=(await db.query('select invoice_date::text,grn_number,invoice_value::text from public.material_receipts where id=$1',[commercial])).rows[0];assert.equal(await scalar('select invoice_file_url from public.material_receipts where id=$1',[commercial]),'test/invoice.pdf');assert.equal(r.invoice_date,'2026-01-05');assert.match(r.grn_number,/^GRN\/[0-9]{4}\/[0-9]{4,}$/);assert.equal(Number(r.invoice_value),1200);assert.equal(Number(await scalar('select invoice_value from public.vendor_payments where id=$1',[payable])),1200);});
+await check('payments reject overpayment, negatives and fractional cents',async()=>{for(const amount of [1201,-1,'NaN',0,0.001])await assert.rejects(call('record_vendor_payment',[payable,{amount,payment_date:'2026-01-06',payment_mode:'NEFT'}]),/Amount/);});
+await call('record_vendor_payment',[payable,{amount:400,payment_date:'2026-01-06',payment_mode:'NEFT',bank:'Bank',utr_number:'UTR-1',proof_name:'proof.pdf',proof_path:'test/invoice.pdf'}]);
+await check('partial payment updates outstanding and status',async()=>{assert.equal(await scalar('select proof_path from public.vendor_payment_records where vendor_payment_id=$1',[payable]),'test/invoice.pdf');assert.equal(await scalar('select status from public.vendor_payments where id=$1',[payable]),'Partially Paid');assert.equal(Number(await scalar('select invoice_value-paid_amount from public.vendor_payments where id=$1',[payable])),800);});
+await check('paid receipts cannot be cancelled',async()=>assert.rejects(call('cancel_material_receipt',[commercial,'Correction']),/recorded vendor payments/));
+await call('record_vendor_payment',[payable,{amount:800,payment_date:'2026-01-07',payment_mode:'UPI'}]);
+await check('full settlement automatically marks Paid',async()=>{assert.equal(await scalar('select status from public.vendor_payments where id=$1',[payable]),'Paid');assert.equal(Number(await scalar('select invoice_value-paid_amount from public.vendor_payments where id=$1',[payable])),0);});
+const draft=await call('authorized_record_material_receipt',[fresh.id,{invoice_date:'2026-01-05',draft:true},lineItems]);
+await check('draft does not allocate GRN or create payable',async()=>{assert.equal(await scalar('select status from public.material_receipts where id=$1',[draft]),'DRAFT');assert.equal(await scalar('select grn_number from public.material_receipts where id=$1',[draft]),null);assert.equal(await scalar('select count(*)::integer from public.vendor_payments where material_receipt_id=$1',[draft]),0);});
+await db.query("insert into storage.objects(bucket_id,name,owner_id)values('purchase-commercial-documents','test/grn.pdf',$1)",[uid]);
+await call('replace_receipt_document',[draft,'grn','grn.pdf','test/grn.pdf']);
+await call('confirm_draft_material_receipt',[draft]);
+await check('draft confirmation creates payable and locks replacement',async()=>{assert.equal(await scalar('select count(*)::integer from public.vendor_payments where material_receipt_id=$1',[draft]),1);await assert.rejects(call('replace_receipt_document',[draft,'grn','grn.pdf','test/grn.pdf']),/Draft/);});
+const draftPayable=await scalar('select id from public.vendor_payments where material_receipt_id=$1',[draft]);
+await call('cancel_material_receipt',[draft,'Correction']);
+await check('unpaid cancellation cancels payable',async()=>assert.equal(await scalar('select status from public.vendor_payments where id=$1',[draftPayable]),'Cancelled'));
+const other=await order('PO/2026/OTHER','CONFIRMED');await db.query("update public.purchase_orders set issuing_company_key='OTHER',grand_total=100 where id=$1",[other.id]);await call('authorized_approve_purchase_order',[other.id]);
+const otherReceipt=await call('authorized_record_material_receipt',[other.id,{invoice_date:'2026-01-05'},[{purchase_order_item_id:other.line,received_quantity:1000,accepted_quantity:1000,rejected_quantity:0}]]);
+await check('GRN counters are company scoped',async()=>assert.match(await scalar('select grn_number from public.material_receipts where id=$1',[otherReceipt]),/\/0001$/));
+await check('PO closure is blocked while invoice remains outstanding',async()=>assert.rejects(call('close_purchase_order',[other.id]),/settle vendor payments/));
+const otherPayable=await scalar('select id from public.vendor_payments where material_receipt_id=$1',[otherReceipt]);await call('record_vendor_payment',[otherPayable,{amount:100,payment_date:'2026-01-06',payment_mode:'Cash'}]);await call('close_purchase_order',[other.id]);
+await db.exec("set test.permissions='false'");
+await check('payment recording checks finance permission',async()=>assert.rejects(call('record_vendor_payment',[payable,{}]),/permission required/));
+console.log('Vendor payment migration checks passed');
+`;
+try{await new (Object.getPrototypeOf(async function(){}).constructor)('db','fs','assert',fixture+"{\n"+suite+"\n}")(db,fs,assert);}finally{await db.close();}
