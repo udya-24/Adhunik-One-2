@@ -113,3 +113,17 @@ node tests/sales-workflow-database.mjs
 The database validation script uses the same optional PGlite runtime under
 `node_modules/.cache/gp-validation` as `tests/finance-database.mjs`; it tests a local
 PostgreSQL instance and does not connect to the deployed database.
+
+### Item Master Excel integration (12-Nov-2026)
+
+The approved source is `Item master v5.xlsx`. Apply the additive
+`supabase/migrations/202611120001_item_master_excel_import.sql` to a disposable
+local Supabase database before testing the new screens. Sign in as a test Admin
+and open **Inventory → Item Master → Excel Import**. Preview and confirm product
+master records separately from stock source review; quantity posting is disabled
+pending opening/rejected-stock accounting rules. Existing items are reused only
+when supplied fields agree and are never overwritten automatically.
+
+See [the implementation report](docs/item-master-excel-implementation-report.md)
+for all six mappings, schema changes, validation results, local test commands,
+manual acceptance steps and the remaining stock-posting approval boundary.
