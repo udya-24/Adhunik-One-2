@@ -1,5 +1,7 @@
 # Item Master Excel integration — implementation report
 
+> Current confirmation behavior is documented in [the resumable import timeout fix](item-master-import-timeout-fix.md). Migration 002 supersedes the whole-workbook atomic confirmation described in this original report; each bounded batch is now atomic and earlier successful batches are preserved.
+
 Date: 12-Nov-2026. Implemented locally under the approved reconstructed plan and its authoritative amendment. No production migration, production import, commit, push or deployment was performed.
 
 ## Completed behavior

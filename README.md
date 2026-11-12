@@ -127,3 +127,18 @@ when supplied fields agree and are never overwritten automatically.
 See [the implementation report](docs/item-master-excel-implementation-report.md)
 for all six mappings, schema changes, validation results, local test commands,
 manual acceptance steps and the remaining stock-posting approval boundary.
+
+### Resumable Item Master confirmation
+
+If the Excel preview succeeds but confirmation times out, apply the new
+`supabase/migrations/202611120002_resumable_item_master_import.sql` after migration
+001. **Do not rerun migration 001 when it is already applied.** Use the updated
+application with migration 002. It replaces whole-workbook confirmation with
+persistent jobs and transactions of up to 100 products. Completed batches remain
+saved after an interruption; use **Retry / Resume Import** and reduce the batch
+size if needed. Opening/rejected stock and inventory balances remain unchanged.
+
+See [the timeout fix report](docs/item-master-import-timeout-fix.md) for measured
+root cause, read-only recovery checks, transaction boundaries and exact local
+verification steps. The earlier integration report describes the original
+all-or-nothing implementation; the timeout fix report governs confirmation now.
