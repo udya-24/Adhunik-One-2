@@ -159,3 +159,10 @@ No production migration, stock posting, push or deployment is part of this chang
 
 The original Item Master import still never posts stock, and its earlier generic
 stock proposal remains non-posting; this new stock import is a separate approval.
+
+For the live investigation of the two November 12 sources, historical timeout
+messages, completed-source reuse and paginated Item Master previews, see
+[the permanent import diagnosis](docs/item-import-permanent-diagnosis.md).
+Migration `202611130003_item_import_preview_and_recovery.sql` is new; apply it
+with the updated application after its prerequisites, without reimporting the
+already COMMITTED workbook.
