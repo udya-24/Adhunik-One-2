@@ -1,0 +1,4 @@
+import {PageHeader} from "@/components/ui/page-header";
+import {requireView,currentAccess} from "@/lib/security/access";
+import {AiAssistantLoader} from "@/components/ai/loaders";
+export default async function AiPage({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){const params=await searchParams;await requireView("ai.use");const access=await currentAccess();return <><PageHeader title="AI Assistant" description="Ask general questions, summarize your own text, or compare authorized inventory candidates. Suggestions require your review."/><AiAssistantLoader initialFeature={params.feature==="inventory_matching"?"inventory_matching":"general"} general={Boolean(access.grants["ai.general"]?.canView)} inventory={Boolean(access.grants["ai.inventory"]?.canView&&access.grants["inventory.items"]?.canView)}/></>}

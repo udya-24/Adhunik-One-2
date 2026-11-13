@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test:ai": "node --experimental-strip-types --experimental-test-isolation=none --test tests/ai.test.mjs tests/ai-database.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "latest",
@@ -14,15 +16,19 @@
     "docx": "^9.7.1",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
+    "jszip": "3.10.1",
     "lucide-react": "latest",
     "next": "latest",
+    "openai": "^7.56.0",
     "react": "latest",
     "react-dom": "latest",
+    "sax": "1.6.1",
+    "server-only": "^0.0.1",
     "sharp": "^0.35.3",
-    "jszip": "3.10.1",
-    "sax": "1.6.1"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
     "@tailwindcss/postcss": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
@@ -31,5 +37,8 @@
     "eslint-config-next": "latest",
     "tailwindcss": "latest",
     "typescript": "latest"
+  },
+  "engines": {
+    "node": ">=22.16.0"
   }
 }

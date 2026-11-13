@@ -10,7 +10,7 @@ Next.js App Router, TypeScript, Tailwind CSS, Supabase Auth/PostgreSQL, and Luci
 
 ## Local setup
 
-1. Install Node.js 20.9 or newer.
+1. Install Node.js 22.16 or newer.
 2. Create a Supabase project.
 3. Copy `.env.example` to `.env.local`.
 4. Add the project URL and publishable/legacy anon key to `.env.local`.
@@ -178,3 +178,7 @@ changes selling prices or creates accounting entries.
 
 See [the pricing/valuation implementation report](docs/item-pricing-and-valuation.md)
 for exact rules, migration/manual steps, preservation guarantees and tests.
+
+## Central OpenAI integration
+
+AI is disabled by default and uses a manually managed server-only `OPENAI_API_KEY`. See [setup, permissions, migration, budgets and deployment checklist](docs/central-ai-integration.md) and [verification results](docs/central-ai-verification.md). No live API calls are required for the mocked/local database tests (`npm run test:ai`).

@@ -31,6 +31,7 @@ export const primaryNavigation: ModuleDefinition[] = [
   { label: "Reports & BI", title: "Enterprise Reports & BI", href: "/reports", phase: "Phase 14", icon: ChartNoAxesCombined },
   { label: "Security", title: "Enterprise Security, Identity & Authorization", href: "/security", phase: "Phase 15", icon: ShieldCheck },
   { label: "Mobile", title: "Mobile Applications", href: "/mobile", phase: "Phase 16", icon: Smartphone },
+  { label: "AI Assistant", title: "AI Assistant", href: "/ai", phase: "Central AI", icon: Smartphone },
   { label: "Integrations", title: "External Integrations", href: "/integrations", phase: "Phase 17", icon: PackageCheck },
 ];
 
