@@ -166,3 +166,15 @@ messages, completed-source reuse and paginated Item Master previews, see
 Migration `202611130003_item_import_preview_and_recovery.sql` is new; apply it
 with the updated application after its prerequisites, without reimporting the
 already COMMITTED workbook.
+
+### Purchase COGS, independent selling prices and inventory valuation
+
+Apply the incremental `202611130004_item_pricing_and_valuation.sql` migration
+locally after its prerequisites. Item Master now exposes independent purchase
+COGS and Selling Price, plus read-only valuation from actual posted stock.
+Use **Item Master → Import / Update COGS** for separately approved, bounded
+price-only updates from the existing workbook. This never reposts opening stock,
+changes selling prices or creates accounting entries.
+
+See [the pricing/valuation implementation report](docs/item-pricing-and-valuation.md)
+for exact rules, migration/manual steps, preservation guarantees and tests.

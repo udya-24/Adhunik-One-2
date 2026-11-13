@@ -1,0 +1,6 @@
+import Link from"next/link";
+import {notFound}from"next/navigation";
+import {requireAdmin}from"@/lib/identity/data";
+import {PageHeader}from"@/components/ui/page-header";
+import {PriceReview}from"../forms";
+export default async function PriceImportPage({params}:{params:Promise<{id:string}>}){const{id}=await params,{supabase}=await requireAdmin();const{data:job,error}=await supabase.from("item_price_imports").select("*").eq("id",id).maybeSingle();if(error)throw new Error("Could not read price import. Check the pricing migration.");if(!job)notFound();const[{data:progress,error:progressError},{data:page,error:pageError}]=await Promise.all([supabase.rpc("item_price_progress",{p_id:id}),supabase.rpc("item_price_page",{p_id:id,p_offset:0})]);if(progressError||pageError||!progress||!page)throw new Error("Could not read saved price preview. Active Admin and Item Master Edit access are required.");return <><PageHeader title={job.source_name+" · COGS Review"} description={job.sheet+" · revision "+job.revision}/><Link className="text-cyan-700" href="/inventory/items/import/prices">Price import history</Link><p className="my-3 break-all text-xs text-slate-500">SHA-256 {job.source_sha256}{job.source_batch_id&&" · Source batch "+job.source_batch_id}</p><PriceReview key={job.id+":"+job.revision+":"+job.state} job={job} initial={progress} page={page}/></>}
