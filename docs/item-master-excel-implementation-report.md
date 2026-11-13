@@ -1,5 +1,7 @@
 # Item Master Excel integration — implementation report
 
+> Opening stock update: [Bulk Opening Stock Import](bulk-opening-stock-import.md) now documents the separately approved usable-opening workflow. Rejected quantities remain unposted. Product import and its original generic stock proposal continue to be non-posting.
+
 > Current confirmation behavior is documented in [the resumable import timeout fix](item-master-import-timeout-fix.md). Migration 002 supersedes the whole-workbook atomic confirmation described in this original report; each bounded batch is now atomic and earlier successful batches are preserved.
 
 Date: 12-Nov-2026. Implemented locally under the approved reconstructed plan and its authoritative amendment. No production migration, production import, commit, push or deployment was performed.

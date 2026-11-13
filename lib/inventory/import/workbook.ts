@@ -36,7 +36,7 @@ export function decimal(value: string, scale: number): { fixed: string; rounded:
   return { fixed: scale ? s.slice(0, -scale) + "." + s.slice(-scale) : s, rounded: shift < 0 && digits % divisor !== BigInt(0), scaled };
 }
 
-export async function readWorkbook(bytes: Buffer) {
+async function openWorkbook(bytes: Buffer) {
   if (!bytes.length || bytes.length > 10 * 1024 * 1024) throw new Error("Upload an XLSX workbook of at most 10 MB.");
   const zip = await JSZip.loadAsync(bytes);
   if (Object.keys(zip.files).length > 1000) throw new Error("Too many workbook entries.");
@@ -60,10 +60,23 @@ export async function readWorkbook(bytes: Buffer) {
     });
     return xml(Buffer.concat(chunks).toString("utf8"));
   }
+  return {entry};
+}
+export async function listWorkbookSheets(bytes: Buffer): Promise<string[]> {
+  const {entry}=await openWorkbook(bytes), workbook=(await entry("xl/workbook.xml"))!, sheetList=child(workbook,"sheets");
+  if(!sheetList)throw new Error("Workbook has no worksheets.");
+  const names=children(sheetList,"sheet").map(s=>s.attrs.name);
+  if(!names.length||names.length>100||new Set(names).size!==names.length)throw new Error("Invalid worksheet list.");
+  return names;
+}
+export async function readWorkbook(bytes: Buffer, selectedSheet?: string) {
+  const {entry}=await openWorkbook(bytes);
   const workbook = (await entry("xl/workbook.xml"))!, rels = (await entry("xl/_rels/workbook.xml.rels"))!;
   const sheets = children(child(workbook, "sheets"), "sheet");
-  if (sheets.length !== 1) throw new Error("This import expects exactly one product sheet; review multi-sheet workbooks separately.");
-  const sheet = sheets[0], rel = rels.children.find(x => x.attrs.Id === sheet.attrs["r:id"]);
+  if (!selectedSheet && sheets.length !== 1) throw new Error("This import expects exactly one product sheet; review multi-sheet workbooks separately.");
+  const sheet = selectedSheet ? sheets.find(s=>s.attrs.name===selectedSheet) : sheets[0];
+  if(!sheet)throw new Error("Select a worksheet from this workbook.");
+  const rel = rels.children.find(x => x.attrs.Id === sheet.attrs["r:id"]);
   if (!rel || rel.attrs.TargetMode === "External") throw new Error("Invalid sheet relationship.");
   const path = rel.attrs.Target.startsWith("/") ? rel.attrs.Target.slice(1) : "xl/" + rel.attrs.Target;
   if (path.includes("..")) throw new Error("Invalid sheet path.");

@@ -7,7 +7,7 @@ import { ImportReview, ProposalAction, ResumeImport } from "../forms";
 export default async function ImportBatchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params, { supabase } = await requireAdmin();
   const { data: b, error } = await supabase.from("item_import_batches").select("*").eq("id", id).maybeSingle();
-  if (error) throw new Error(error.message); if (!b) notFound();
+  if (error) throw new Error(error.message); if (!b || b.purpose!=="ITEM_MASTER") notFound();
   const [{ data: proposal, error: proposalError }, { data: audit, error: auditError }] = await Promise.all([
     supabase.from("item_import_stock_proposals").select("*").eq("batch_id", id).maybeSingle(),
     supabase.from("item_master_admin_activities").select("*").eq("batch_id", id).order("created_at", { ascending: false }).limit(100),
