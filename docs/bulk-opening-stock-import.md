@@ -1,5 +1,7 @@
 # Bulk Opening Stock from Excel — implementation report
 
+Historical report. The 13-Nov-2026 confirmation supersedes rejected-stock exclusion for new jobs: usable opening plus separate rejected stock. See [the current report](opening-rejected-stock-update.md).
+
 Date: 12-Nov-2026. Implemented locally. No production migrations, stock postings, imports, commits, pushes or deployments were performed.
 
 ## Confirmed accounting rule and workbook

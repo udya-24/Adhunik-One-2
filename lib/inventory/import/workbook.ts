@@ -69,7 +69,7 @@ export async function listWorkbookSheets(bytes: Buffer): Promise<string[]> {
   if(!names.length||names.length>100||new Set(names).size!==names.length)throw new Error("Invalid worksheet list.");
   return names;
 }
-export async function readWorkbook(bytes: Buffer, selectedSheet?: string) {
+export async function readWorkbook(bytes: Buffer, selectedSheet?: string, options: {openingStock?: boolean} = {}) {
   const {entry}=await openWorkbook(bytes);
   const workbook = (await entry("xl/workbook.xml"))!, rels = (await entry("xl/_rels/workbook.xml.rels"))!;
   const sheets = children(child(workbook, "sheets"), "sheet");
@@ -126,7 +126,7 @@ export async function readWorkbook(bytes: Buffer, selectedSheet?: string) {
         if (!header || Object.values(columns).includes(header)) throw new Error("Unknown or duplicate header: " + value);
         columns[col] = header;
       }
-      if (headers.some(h => !Object.values(columns).includes(h))) throw new Error("Required columns: " + headers.join(", "));
+      if (headers.filter(h => !options.openingStock || !["Rejected qty", "Rejected value (Rs)"].includes(h)).some(h => !Object.values(columns).includes(h))) throw new Error("Required columns: " + headers.join(", "));
       continue;
     }
     if (!Object.values(values).some(v => v.trim())) continue;

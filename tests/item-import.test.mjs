@@ -55,3 +55,12 @@ test('catalogue pagination makes all 1,994 products available and rejects partia
  const failed={range:async(from,to)=>from?{data:null,error:{message:'Read failed'}}:{data:products.slice(from,to+1),error:null}};
  await assert.rejects(readAll(failed),/Read failed/);
 });
+
+
+test('opening workbook permits missing rejected columns for manual entry without changing Item Master requirements',async()=>{
+ const keep=headers.map((h,i)=>({h,i})).filter(x=>!['Rejected qty','Rejected value (Rs)'].includes(x.h));
+ const values=['CODE','Name','Group','Type','Family','Store','PCS','Status','10','2','1','10','2','0',''];
+ const bytes=await workbook({headerValues:keep.map(x=>x.h),values:keep.map(x=>values[x.i])});
+ await assert.rejects(readWorkbook(bytes),/Required columns/);
+ const p=await readWorkbook(bytes,undefined,{openingStock:true});assert.equal(p.rows[0].raw['Opening qty'],'10');assert.equal(p.rows[0].raw['Rejected qty'],undefined);
+});

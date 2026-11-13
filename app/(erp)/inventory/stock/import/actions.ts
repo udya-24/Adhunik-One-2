@@ -16,7 +16,7 @@ export async function uploadOpeningWorkbook(form:FormData):Promise<OpeningResult
   try{
     const{supabase}=await requireAdmin(),{file,bytes}=await fileBytes(form),sheet=String(form.get("sheet")||"");
     if(!sheet)return {error:"Select the worksheet before previewing."};
-    const source=await readWorkbook(bytes,sheet);
+    const source=await readWorkbook(bytes,sheet,{openingStock:true});
     const{data,error}=await supabase.rpc("stage_opening_stock_workbook",{p_name:file.name,p_sha256:source.sha256,p_source_base64:bytes.toString("base64"),p_sheet:source.sheet,p_rows:source.rows}).retry(false);
     if(error||!data)return {error:openingError(error?.code,error?.message)};id=data;
   }catch(e){return {error:(e as Error).message};}
@@ -29,8 +29,9 @@ export async function reuseOpeningSource(_:OpeningResult,form:FormData):Promise<
 }
 export async function saveOpeningPreview(id:string,revision:number,_:OpeningResult,form:FormData):Promise<OpeningResult>{
   try{
-    const{supabase}=await requireAdmin(),selected=new Set(form.getAll("selected").map(String)),changes:OpeningEdit[]=[];
-    for(const[key,value]of form.entries())if(key.startsWith("qty:")){const row=key.slice(4);changes.push({row:Number(row),quantity:String(value).trim(),selected:selected.has(row),location:String(form.get("location:"+row)||"")||null});}
+    const{supabase}=await requireAdmin(),selected=new Set(form.getAll("selected").map(String)),changes:OpeningEdit[]=form.has("changes")?JSON.parse(String(form.get("changes"))):[];
+    if(!Array.isArray(changes)||changes.length>10000)return {error:"Invalid preview edits"};
+    for(const[key,value]of form.entries())if(!form.has("changes"))if(key.startsWith("qty:")){const row=key.slice(4);changes.push({row:Number(row),quantity:String(value).trim(),selected:selected.has(row),location:String(form.get("location:"+row)||"")||null});}
     const{error}=await supabase.rpc("edit_opening_stock_preview",{p_id:id,p_revision:revision,p_changes:changes}).retry(false);if(error)return {error:openingError(error.code,error.message)};
     revalidatePath(path(id));return {success:"Preview updated. Review quantities, validation and resulting balances before confirming."};
   }catch(e){return {error:openingError(undefined,(e as Error).message)};}

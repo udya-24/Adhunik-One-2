@@ -143,18 +143,19 @@ root cause, read-only recovery checks, transaction boundaries and exact local
 verification steps. The earlier integration report describes the original
 all-or-nothing implementation; the timeout fix report governs confirmation now.
 
-### Bulk usable opening stock from Excel
+### Opening and rejected stock from Excel
 
-After the existing Item Master integration migrations, apply
-`202611120003_bulk_opening_stock_import.sql` to a disposable local test database.
-Use **Inventory → Stock Register → Import Opening Stock from Excel** to upload
-and select a worksheet or reuse a completed Item Master source. The confirmed
-rule is **Opening qty is usable stock; Rejected qty remains unposted**. Save and
-review edits before explicit approval. Existing inventory/history is skipped;
-use ordinary authorized adjustments for those items. Posting uses resumable,
-independently atomic batches, not a whole-workbook transaction.
+After the three `20261112` import migrations, apply the incremental
+`202611130001_import_read_performance.sql` and
+`202611130002_rejected_opening_stock.sql` migrations to a disposable test database.
+The confirmed rule is **Opening qty is usable; add Rejected qty separately**.
+Use **Inventory → Stock Register → Import Opening Stock from Excel**, reuse the
+committed Item Master source, review/save the paginated editable preview and
+explicitly approve posting. Existing inventory/history is skipped for separate
+reconciliation. Older approvals keep their original rejected-exclusion policy.
 
-See [the bulk opening stock report](docs/bulk-opening-stock-import.md) for schema,
-security, per-unit reconciliation, tests and exact local testing instructions.
+See [the implementation, migration and testing report](docs/opening-rejected-stock-update.md).
+No production migration, stock posting, push or deployment is part of this change.
+
 The original Item Master import still never posts stock, and its earlier generic
 stock proposal remains non-posting; this new stock import is a separate approval.

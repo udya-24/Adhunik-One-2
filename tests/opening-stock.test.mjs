@@ -16,3 +16,11 @@ test('reconciliation keeps units separate, uses exact decimals and exposes inval
  const totals=reconcileOpeningStock([row('PCS','pcs','0.1'),row('PCS','pcs','0.2'),row('KG','kg','4.123456'),row('MTR','pcs','5','INVALID',null),row('KG','kg','invalid','INVALID')],decimal);
  assert.equal(totals.find(t=>t.unit_id==='pcs').posted,'0.300000');assert.equal(totals.find(t=>t.unit_id==='kg').posted,'4.123456');assert.equal(totals.find(t=>t.unit_id==='kg').invalid_source_values,1);assert.equal(totals.find(t=>t.unresolved_source_unit).unit,'MTR');
 });
+
+
+test('reconciliation distinguishes edited rejected proposals, actual posted rejected stock and legacy exclusions',async()=>{
+ const{reconcileOpeningStock}=await import('../lib/inventory/opening-stock/reconciliation.ts');
+ const base={unit_id:'pcs',raw:{Unit:'PCS','Opening qty':'5','Rejected qty':'2'},is_selected:true,state:'POSTED',snapshot:{unit:'PCS',source_unit_id:'pcs',quantity:'5',rejected_posting_quantity:'3'},rejected_transaction_id:'rejected-ledger'};
+ const [t]=reconcileOpeningStock([base,{...base,rejected_transaction_id:null,snapshot:{...base.snapshot,rejected_posting_quantity:'0',quantity_policy:'USABLE_OPENING_EXCLUDE_REJECTED'}}],decimal);
+ assert.equal(t.excel_rejected,'4.000000');assert.equal(t.rejected_posted,'3.000000');assert.equal(t.rejected_selected,'3.000000');assert.equal(t.rejected_unposted,'2.000000');assert.equal(t.posted,'10.000000');
+});
